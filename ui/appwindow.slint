@@ -30,6 +30,8 @@ component ContactPage {
 
 component MainMenu {
     callback navigate;
+    callback close;
+    
     out property <int> next_page: 1;
     VerticalBox {
         Text {
@@ -49,7 +51,7 @@ component MainMenu {
         }
         Button {
             text: "Quit";
-            // clicked => { close }
+            clicked => { root.close(); }
         }
         Button {
             text: "Help";
@@ -75,11 +77,14 @@ export component MainWindow inherits Window {
     title: "SMTBR";
     width: 400px;
     height: 500px;
+
+    callback close();
     in-out property <int> page_enum: 1;
 
     // check yml if yml then 1 else 0
     if (self.page_enum == 1) : MainMenu {
         navigate => {root.page_enum = self.next_page}
+        close => {root.close();}
     }
     if (self.page_enum == 4) : HelpPage {
         tomain => {root.page_enum = 1}
