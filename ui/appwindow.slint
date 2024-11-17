@@ -1,0 +1,91 @@
+import { Button, VerticalBox } from "std-widgets.slint";
+
+component HelpPage {
+    callback tomain;
+
+    VerticalBox {
+        Text {
+            text: "You can read the manual from: https://git.sr.ht/~czukay2019/smtbr";
+        }
+        Button {
+            text: "Go back to main menu";
+            clicked => { root.tomain(); }
+        }
+    }
+}
+
+component ContactPage {
+    callback tomain;
+
+    VerticalBox {
+        Text {
+            text: "Email me: czukay2019@proton.me";
+        }
+        Button {
+            text: "Go back to main menu";
+            clicked => { root.tomain(); }
+        }
+    }
+}
+
+component MainMenu {
+    callback navigate;
+    out property <int> next_page: 1;
+    VerticalBox {
+        Text {
+            text: "Welcome to SMTBR!";
+        }
+        Button {
+            text: "Study -> Midterm Exam";
+        }
+        Button {
+            text: "Study -> Final Exam";
+        }
+        Button {
+            text: "Study -> All";
+        }
+        Button {
+            text: "Manage Blacklist";
+        }
+        Button {
+            text: "Quit";
+            // clicked => { close }
+        }
+        Button {
+            text: "Help";
+            clicked => { root.next_page = 4; root.navigate(); }
+        }
+        Button {
+            text: "Factory Reset";
+        }
+        Button {
+            text: "Contact Developer";
+            clicked => { root.next_page = 5; root.navigate(); }
+        }
+    }
+}
+export component MainWindow inherits Window {
+    // page enums:
+    //     0 -> newbie page
+    //     1 -> main page
+    //     2 -> study page
+    //     3 -> blacklist page
+    //     4 -> help page
+    //     5 -> contact info page
+    title: "SMTBR";
+    width: 400px;
+    height: 500px;
+    in-out property <int> page_enum: 1;
+
+    // check yml if yml then 1 else 0
+    if (self.page_enum == 1) : MainMenu {
+        navigate => {root.page_enum = self.next_page}
+    }
+    if (self.page_enum == 4) : HelpPage {
+        tomain => {root.page_enum = 1}
+    }
+    if (self.page_enum == 5) : ContactPage {
+        tomain => {root.page_enum = 1}
+    }
+
+}
