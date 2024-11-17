@@ -1,4 +1,48 @@
-import { Button, VerticalBox } from "std-widgets.slint";
+import { StandardButton, Button, VerticalBox, ProgressIndicator } from "std-widgets.slint";
+
+component NewbiePage {
+    in property <bool> is_yml: false;
+    in-out property <bool> processing: false;
+    in property <bool> is_error: false;
+    callback close;
+    callback serialize;
+
+    if (!is_yml && !processing) :
+        VerticalBox {
+            Text {
+                text: "Welcome to SMTBR, a Strategy Management Test Bank study helper with problem Randomization.\n Since it's the first time you're using SMTBR, data transformation works are needed.";
+            }
+            Text {
+                text: "Are your test bank docx files ready?";
+            }
+            StandardButton {
+                kind: yes;
+                clicked => {root.processing = true;}
+            }
+            // StandardButton {
+            //     kind: no;
+            //     clicked => {}
+            // }
+        }
+    if (!is_yml && processing) : 
+        VerticalBox{
+            ProgressIndicator {indeterminate: true;}
+            Text {text: "processing...";
+                init => {root.serialize();}}
+        }
+    if (is_error) : Text { text : "Error occurred!"; }
+    if (is_yml) :
+        VerticalBox {
+            Text {
+                text: "Successfully processed test bank files.\nPlease reopen the app to continue...";
+            }
+            Button {
+                text: "Quit";
+                clicked => { root.close(); }
+            }
+
+        }
+}
 
 component HelpPage {
     callback tomain;
@@ -31,8 +75,10 @@ component ContactPage {
 component MainMenu {
     callback navigate;
     callback close;
+    callback reset;
     
     out property <int> next_page: 1;
+
     VerticalBox {
         Text {
             text: "Welcome to SMTBR!";
@@ -59,6 +105,10 @@ component MainMenu {
         }
         Button {
             text: "Factory Reset";
+            clicked => {
+                root.reset();
+                root.next_page = 0; root.navigate();
+            }
         }
         Button {
             text: "Contact Developer";
@@ -79,12 +129,26 @@ export component MainWindow inherits Window {
     height: 500px;
 
     callback close();
-    in-out property <int> page_enum: 1;
+    callback serialize();
+    callback reset();
+    in-out property <int> page_enum: 0;
+    in-out property <bool> is_yaml: false;
+    in-out property <bool> processing: false;
+    in-out property <bool> is_error: false;
 
-    // check yml if yml then 1 else 0
+    if (self.page_enum == 0) : NewbiePage {
+        width: 100%;
+        is_yml: root.is_yaml;
+        processing: root.processing;
+        is_error: root.is_error;
+        
+        close => {root.close()}
+        serialize => {root.serialize()}
+    }
     if (self.page_enum == 1) : MainMenu {
         navigate => {root.page_enum = self.next_page}
-        close => {root.close();}
+        close => {root.close()}
+        reset => {root.reset()}
     }
     if (self.page_enum == 4) : HelpPage {
         tomain => {root.page_enum = 1}
