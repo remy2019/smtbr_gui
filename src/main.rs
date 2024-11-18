@@ -1,3 +1,4 @@
+pub mod deserialize;
 pub mod serialize;
 pub mod types;
 
@@ -17,10 +18,7 @@ fn main() {
     let main_window_weak = main_window.as_weak();
 
     // check test.yml exists
-    let exe = std::env::current_exe().unwrap();
-    let dir = exe.parent().expect("Executable must be in some directory");
-    let yml = dir.join("test.yml");
-    match std::fs::metadata(yml) {
+    match std::fs::metadata(test_yml.clone()) {
         Ok(_) => main_window.set_page_enum(1),
         Err(_) => main_window.set_page_enum(0),
     }
@@ -34,6 +32,26 @@ fn main() {
         slint::Timer::single_shot(time::Duration::from_secs(3), move || {
             match serialize::serialize_problems() {
                 Ok(_) => {
+                    // create default blacklist
+                    let exe = std::env::current_exe().unwrap();
+                    let dir = exe.parent().expect("Executable must be in some directory");
+                    let yml = dir.join("test.yml");
+                    let data_string = &std::fs::read_to_string(yml).unwrap();
+                    let data = deserialize::deserialize(data_string).unwrap();
+
+                    let mut selected_data: Vec<(u32, u32, bool)> = vec![];
+                    for problem in data {
+                        selected_data.push((problem.chapter, problem.prob_num_rel, false));
+                    }
+                    let black_yml = dir.join("blacklist.yml");
+
+                    let f = std::fs::OpenOptions::new()
+                        .write(true)
+                        .create(true)
+                        .open(black_yml)
+                        .expect("Couldn't open file");
+                    serde_yaml::to_writer(f, &selected_data).unwrap();
+
                     main_window.set_processing(false);
                     main_window.set_is_yaml(true);
                 }

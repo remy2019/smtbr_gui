@@ -4,8 +4,8 @@ component NewbiePage {
     in property <bool> is_yml: false;
     in-out property <bool> processing: false;
     in property <bool> is_error: false;
-    callback close;
     callback serialize;
+    callback tomain;
 
     if (!is_yml && !processing) :
         VerticalBox {
@@ -34,11 +34,11 @@ component NewbiePage {
     if (is_yml) :
         VerticalBox {
             Text {
-                text: "Successfully processed test bank files.\nPlease reopen the app to continue...";
+                text: "Successfully processed test bank files.";
             }
             Button {
-                text: "Quit";
-                clicked => { root.close(); }
+                text: "Go to main menu";
+                clicked => { root.tomain(); }
             }
 
         }
@@ -142,8 +142,11 @@ export component MainWindow inherits Window {
         processing: root.processing;
         is_error: root.is_error;
         
-        close => {root.close()}
         serialize => {root.serialize()}
+        tomain => {
+            root.page_enum = 1; 
+            root.is_yaml = false; root.processing = false; root.is_error = false;
+        }
     }
     if (self.page_enum == 1) : MainMenu {
         navigate => {root.page_enum = self.next_page}
